@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import './App.css';
+import Roles from './Roles';
 
 type AnimalType = 'Królik' | 'Owca' | 'Świnia' | 'Krowa' | 'Koń' | 'MałyPies' | 'DużyPies';
 
@@ -33,6 +34,7 @@ function App() {
   const [toAnimal, setToAnimal] = useState<AnimalType>('Owca');
   const [amount, setAmount] = useState<number>(1);
   const [stock, setStock] = useState<Record<AnimalType, number>>();
+  const [showRules, setShowRules] = useState(false);
 
   const fetchState = async () => {
     try {
@@ -78,9 +80,14 @@ function App() {
 
   const restart = async () => {
     await fetch('http://localhost:5228/Game/restart', { method: 'POST' });
+    setWinner(null);
+    setChanges({});
+    setDice([]);
+    setLastRollPlayer(null);
     await fetchState();
     await fetchStock();
   };
+
 
   useEffect(() => {
     fetchState();
@@ -106,10 +113,17 @@ function App() {
   };
 
   return (
-    <div className="app-container" style={{ color: 'orange' }}>
+    <div className="app-container" style={{ color: 'orange', width: '1000px', margin: '0 auto' }}>
       <h1>Super Farmer</h1>
 
-      <button onClick={restart} className="button">Nowa gra</button>
+      <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center' }}>
+        <button onClick={restart} className="button">Nowa gra</button>
+        <button onClick={() => setShowRules(!showRules)} className="button">Zasady</button>
+      </div>
+
+      {showRules && (
+        <Roles/>
+      )}
 
       {!state ? <h3>Ładowanie gry...</h3> : (
         <>
@@ -119,6 +133,7 @@ function App() {
           </button>
 
           <h2 className="dice">Kostki: {dice.join(', ')}</h2>
+          {winner && <div className="winner">{winner} wygrywa!</div>}
 
           <div className="players">
             {Object.entries(state.players).map(([playerName, animals]) => {
@@ -196,7 +211,6 @@ function App() {
             </div>
           </div>
 
-          {winner && <div className="winner">{winner} wygrywa!</div>}
         </>
       )}
     </div>
