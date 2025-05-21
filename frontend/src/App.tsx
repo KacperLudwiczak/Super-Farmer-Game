@@ -1,28 +1,7 @@
 import { useEffect, useState } from 'react';
 import './App.css';
 import Roles from './Roles';
-
-type AnimalType = 'Królik' | 'Owca' | 'Świnia' | 'Krowa' | 'Koń' | 'MałyPies' | 'DużyPies';
-
-interface GameState {
-  currentPlayer: string;
-  players: Record<string, Record<AnimalType, number>>;
-}
-
-interface PlayerData {
-  name: string;
-  animals: Record<AnimalType, number>;
-}
-
-const animalIcons: Record<AnimalType, string> = {
-  Królik: '🐇',
-  Owca: '🐑',
-  Świnia: '🐖',
-  Krowa: '🐄',
-  Koń: '🐎',
-  MałyPies: '🐕',
-  DużyPies: '🐶'
-};
+import { animalIcons, type AnimalType, type GameState, type PlayerData } from './Interfaces/Interfaces';
 
 function App() {
   const [state, setState] = useState<GameState | null>(null);
