@@ -1,0 +1,116 @@
+body {
+  margin: 0;
+  padding: 0;
+  font-family: 'Segoe UI', sans-serif;
+  background-image: url('/farm-back.jpg');
+  background-size: cover;
+  background-position: center;
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.app-container {
+  background-color: rgba(255, 255, 255, 0.85);
+  padding: 2rem;
+  border-radius: 12px;
+  max-width: 900px;
+  width: 90%;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+  text-align: center;
+}
+
+.button {
+  background-color: #f9a825;
+  color: white;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.button:hover {
+  background-color: #f57f17;
+}
+
+.players {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  gap: 2rem;
+  flex-wrap: wrap;
+  margin-top: 1rem;
+}
+
+.player-board {
+  background: #fff6e6;
+  border-radius: 10px;
+  padding: 1rem;
+  width: 300px;
+  box-shadow: 0 0 10px rgba(0,0,0,0.1);
+  text-align: left;
+}
+
+.gain {
+  color: green;
+  font-weight: bold;
+  transition: all 0.3s;
+}
+.loss {
+  color: red;
+  font-weight: bold;
+  transition: all 0.3s;
+}
+
+.winner {
+  margin-top: 1rem;
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: darkgreen;
+}
+
+ul {
+  list-style: none;
+  padding: 0;
+}
+
+li {
+  margin: 4px 0;
+  font-size: 1.1rem;
+}
+
+.exchange-form {
+  margin: 1.5rem 0;
+  padding: 1rem;
+  background-color: #fef6e0;
+  border: 2px dashed #bba24c;
+  border-radius: 10px;
+}
+
+.form-group {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: flex-end;
+}
+
+.form-group label {
+  display: flex;
+  flex-direction: column;
+  font-weight: bold;
+  color: #333;
+}
+
+.form-group select,
+.form-group input {
+  padding: 0.4rem;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  min-width: 100px;
+  font-size: 1rem;
+  background-color: white;
+  color: #444;
+}
