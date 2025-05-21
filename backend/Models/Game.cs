@@ -57,7 +57,7 @@ namespace Models
         private int currentPlayerIndex = 0;
         public Player CurrentPlayer => Players[currentPlayerIndex];
 
-        private readonly Dictionary<AnimalType, int> herdStock = new()
+        public Dictionary<AnimalType, int> HerdStock { get; private set; } = new()
         {
             [AnimalType.Królik] = 60,
             [AnimalType.Owca] = 24,
@@ -76,19 +76,29 @@ namespace Models
             Players.Add(new Player(name));
         }
 
-        public (string, string) RollDice()
+        public void ResetGame()
         {
-            return (dice1.Roll(), dice2.Roll());
+            Players.Clear();
+            currentPlayerIndex = 0;
+            HerdStock = new()
+            {
+                [AnimalType.Królik] = 60,
+                [AnimalType.Owca] = 24,
+                [AnimalType.Świnia] = 20,
+                [AnimalType.Krowa] = 12,
+                [AnimalType.Koń] = 6,
+                [AnimalType.MałyPies] = 4,
+                [AnimalType.DużyPies] = 2
+            };
         }
 
-        public void NextTurn()
-        {
-            currentPlayerIndex = (currentPlayerIndex + 1) % Players.Count;
-        }
+        public (string, string) RollDice() => (dice1.Roll(), dice2.Roll());
+
+        public void NextTurn() => currentPlayerIndex = (currentPlayerIndex + 1) % Players.Count;
 
         public bool TryExchange(Player player, AnimalType from, AnimalType to, int amount)
         {
-            var conversionRates = new Dictionary<(AnimalType from, AnimalType to), int>
+            var conversionRates = new Dictionary<(AnimalType, AnimalType), int>
             {
                 [(AnimalType.Królik, AnimalType.Owca)] = 6,
                 [(AnimalType.Owca, AnimalType.Świnia)] = 2,
@@ -104,13 +114,13 @@ namespace Models
             if (!conversionRates.TryGetValue((from, to), out int rate)) return false;
 
             int required = rate * amount;
-            if (player.Animals[from] < required || herdStock[to] < amount) return false;
+            if (player.Animals[from] < required || HerdStock[to] < amount) return false;
 
             player.Animals[from] -= required;
             player.Animals[to] += amount;
 
-            herdStock[from] += required;
-            herdStock[to] -= amount;
+            HerdStock[from] += required;
+            HerdStock[to] -= amount;
 
             return true;
         }
@@ -133,9 +143,9 @@ namespace Models
                     if ((type == AnimalType.Krowa || type == AnimalType.Koń) && player.Animals[type] == 0) continue;
 
                     int pairs = player.Animals[type] / 2 + kv.Value;
-                    int gain = Math.Min(pairs, herdStock[type]);
+                    int gain = Math.Min(pairs, HerdStock[type]);
                     player.Animals[type] += gain;
-                    herdStock[type] -= gain;
+                    HerdStock[type] -= gain;
                     changes[type] += gain;
                 }
             }
@@ -145,12 +155,12 @@ namespace Models
                 if (player.Animals[AnimalType.MałyPies] > 0)
                 {
                     player.Animals[AnimalType.MałyPies]--;
-                    herdStock[AnimalType.MałyPies]++;
+                    HerdStock[AnimalType.MałyPies]++;
                     changes[AnimalType.MałyPies]--;
                 }
                 else
                 {
-                    int lost = player.Animals[AnimalType.Królik] - 1;
+                    int lost = Math.Max(0, player.Animals[AnimalType.Królik] - 1);
                     player.Animals[AnimalType.Królik] = Math.Min(player.Animals[AnimalType.Królik], 1);
                     changes[AnimalType.Królik] -= lost;
                 }
@@ -161,22 +171,20 @@ namespace Models
                 if (player.Animals[AnimalType.DużyPies] > 0)
                 {
                     player.Animals[AnimalType.DużyPies]--;
-                    herdStock[AnimalType.DużyPies]++;
+                    HerdStock[AnimalType.DużyPies]++;
                     changes[AnimalType.DużyPies]--;
                 }
                 else
                 {
-                    changes[AnimalType.Owca] -= player.Animals[AnimalType.Owca];
-                    changes[AnimalType.Świnia] -= player.Animals[AnimalType.Świnia];
-                    changes[AnimalType.Krowa] -= player.Animals[AnimalType.Krowa];
-
-                    player.Animals[AnimalType.Owca] = 0;
-                    player.Animals[AnimalType.Świnia] = 0;
-                    player.Animals[AnimalType.Krowa] = 0;
+                    foreach (var type in new[] { AnimalType.Owca, AnimalType.Świnia, AnimalType.Krowa })
+                    {
+                        changes[type] -= player.Animals[type];
+                        player.Animals[type] = 0;
+                    }
                 }
             }
 
             return changes;
         }
-    }
+    } 
 }

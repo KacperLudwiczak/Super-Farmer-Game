@@ -56,5 +56,21 @@ namespace backend.Controllers
             bool success = game.TryExchange(game.CurrentPlayer, from, to, amount);
             return success ? Ok() : BadRequest("Wymiana nieudana");
         }
+
+        [HttpPost("restart")]
+        public IActionResult RestartGame()
+        {
+            game = new Game();
+            game.AddPlayer("Gracz 1");
+            game.AddPlayer("Gracz 2");
+            return Ok();
+        }
+
+        [HttpGet("stock")]
+        public IActionResult GetStock()
+        {
+            return Ok(game.HerdStock);
+        }
+
     }
 }
