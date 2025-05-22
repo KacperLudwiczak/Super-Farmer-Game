@@ -2,6 +2,9 @@ import { useEffect, useState } from 'react';
 import './App.css';
 import Roles from './Roles';
 import { animalIcons, type AnimalType, type GameState, type PlayerData } from './Interfaces/Interfaces';
+import ExchangePanel from './components/ExchangePanel';
+import PlayerBoard from './components/PlayerBoard';
+import { isExchangeValid, getExchangeError } from './utils/exchangeLogic';
 
 function App() {
   const [state, setState] = useState<GameState | null>(null);
@@ -14,6 +17,7 @@ function App() {
   const [amount, setAmount] = useState<number>(1);
   const [stock, setStock] = useState<Record<AnimalType, number>>();
   const [showRules, setShowRules] = useState(false);
+  const [hasExchanged, setHasExchanged] = useState(false);
 
   const fetchState = async () => {
     try {
@@ -42,6 +46,7 @@ function App() {
     setWinner(data.winner);
     setChanges(data.changes);
     setLastRollPlayer(data.player);
+    setHasExchanged(false);
     await fetchState();
     await fetchStock();
   };
@@ -52,9 +57,12 @@ function App() {
       { method: 'POST' }
     );
     if (res.ok) {
+      setHasExchanged(true);
       await fetchState();
       await fetchStock();
-    } else alert('Wymiana nieudana.');
+    } else {
+      alert('Wymiana nieudana.');
+    }
   };
 
   const restart = async () => {
@@ -67,29 +75,10 @@ function App() {
     await fetchStock();
   };
 
-
   useEffect(() => {
     fetchState();
     fetchStock();
   }, []);
-
-  const isExchangeValid = () => {
-    if (!state || !stock) return false;
-    const player = state.players[state.currentPlayer];
-    const rates: Record<string, number> = {
-      'Królik_Owca': 6,
-      'Owca_Świnia': 2,
-      'Świnia_Krowa': 3,
-      'Krowa_Koń': 2,
-      'Owca_Królik': 1,
-      'Świnia_Owca': 2,
-      'Krowa_Świnia': 3,
-      'Koń_Krowa': 2
-    };
-    const key = `${fromAnimal}_${toAnimal}`;
-    const required = rates[key] * amount;
-    return rates[key] && player[fromAnimal] >= required && stock[toAnimal] >= amount;
-  };
 
   return (
     <div className="app-container" style={{ color: 'orange', width: '1000px', margin: '0 auto' }}>
@@ -100,40 +89,26 @@ function App() {
         <button onClick={() => setShowRules(!showRules)} className="button">Zasady</button>
       </div>
 
-      {showRules && (
-        <Roles/>
-      )}
+      {showRules && <Roles />}
 
       {!state ? <h3>Ładowanie gry...</h3> : (
         <>
           <h2>Tura: {state.currentPlayer}</h2>
-          <button onClick={rollDice} className="button">
-            Rzut
-          </button>
+          <button onClick={rollDice} className="button">Rzut</button>
 
           <h2 className="dice">Kostki: {dice.join(', ')}</h2>
           {winner && <div className="winner">{winner} wygrywa!</div>}
 
           <div className="players">
-            {Object.entries(state.players).map(([playerName, animals]) => {
-              const isActive = playerName === lastRollPlayer;
-              return (
-                <div key={playerName} className="player-board">
-                  <h3>{playerName}</h3>
-                  <ul>
-                    {Object.entries(animals).map(([animal, count]) => {
-                      const diff = isActive ? (changes[animal] || 0) : 0;
-                      return (
-                        <li key={animal} className={diff > 0 ? 'gain' : diff < 0 ? 'loss' : ''}>
-                          {animalIcons[animal as AnimalType]} {animal}: {count}{' '}
-                          {diff !== 0 && <span>({diff > 0 ? '+' : ''}{diff})</span>}
-                        </li>
-                      );
-                    })}
-                  </ul>
-                </div>
-              );
-            })}
+            {Object.entries(state.players).map(([playerName, animals]) => (
+              <PlayerBoard
+                key={playerName}
+                playerName={playerName}
+                animals={animals}
+                changes={changes}
+                isActive={playerName === lastRollPlayer}
+              />
+            ))}
           </div>
 
           <h2>Główne stado:</h2>
@@ -141,55 +116,31 @@ function App() {
             <ul>
               {Object.entries(stock)
                 .filter(([a]) => a in animalIcons)
-                .map(([a, count]) => {
-                  const key = a as AnimalType;
-                  return (
-                    <li key={a}>
-                      {animalIcons[key]} {key}: {count}
-                    </li>
-                  );
-                })}
+                .map(([a, count]) => (
+                  <li key={a}>
+                    {animalIcons[a as AnimalType]} {a}: {count}
+                  </li>
+                ))}
             </ul>
           )}
 
-          <div className="exchange-form">
-            <h2>Wymiana</h2>
-            <div className="form-group">
-              <label>
-                Z:
-                <select value={fromAnimal} onChange={(e) => setFromAnimal(e.target.value as AnimalType)}>
-                  {Object.keys(animalIcons).map((animal) => (
-                    <option key={animal} value={animal}>
-                      {animalIcons[animal as AnimalType]} {animal}
-                    </option>
-                  ))}
-                </select>
-              </label>
-              <label>
-                Na:
-                <select value={toAnimal} onChange={(e) => setToAnimal(e.target.value as AnimalType)}>
-                  {Object.keys(animalIcons).map((animal) => (
-                    <option key={animal} value={animal}>
-                      {animalIcons[animal as AnimalType]} {animal}
-                    </option>
-                  ))}
-                </select>
-              </label>
-              <label>
-                Ilość:
-                <input
-                  type="number"
-                  min={1}
-                  value={amount}
-                  onChange={(e) => setAmount(parseInt(e.target.value))}
-                />
-              </label>
-              <button onClick={exchange} className="button" disabled={!isExchangeValid()}>
-              Wymień
-            </button>
-            </div>
-          </div>
-
+          {state && stock && (
+            <ExchangePanel
+              fromAnimal={fromAnimal}
+              toAnimal={toAnimal}
+              amount={amount}
+              setFromAnimal={setFromAnimal}
+              setToAnimal={setToAnimal}
+              setAmount={setAmount}
+              isExchangeValid={() =>
+                isExchangeValid(state.players[state.currentPlayer], stock, fromAnimal, toAnimal, amount, hasExchanged)
+              }
+              getExchangeError={() =>
+                getExchangeError(state.players[state.currentPlayer], stock, fromAnimal, toAnimal, amount, hasExchanged)
+              }
+              exchange={exchange}
+            />
+          )}
         </>
       )}
     </div>

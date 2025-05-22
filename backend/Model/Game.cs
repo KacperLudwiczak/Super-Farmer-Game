@@ -71,6 +71,8 @@ namespace Model
         private readonly Dice dice1 = new(new[] { "Królik", "Królik", "Królik", "Królik", "Królik", "Królik", "Owca", "Owca", "Owca", "Świnia", "Krowa", "Wilk" });
         private readonly Dice dice2 = new(new[] { "Owca", "Owca", "Owca", "Owca", "Owca", "Owca", "Owca", "Owca", "Świnia", "Świnia", "Koń", "Lis" });
 
+        private HashSet<string> exchangedThisTurn = new();
+
         public void AddPlayer(string name)
         {
             Players.Add(new Player(name));
@@ -94,10 +96,17 @@ namespace Model
 
         public (string, string) RollDice() => (dice1.Roll(), dice2.Roll());
 
-        public void NextTurn() => currentPlayerIndex = (currentPlayerIndex + 1) % Players.Count;
+        public void NextTurn()
+        {
+            currentPlayerIndex = (currentPlayerIndex + 1) % Players.Count;
+            exchangedThisTurn.Clear();
+        }
 
         public bool TryExchange(Player player, AnimalType from, AnimalType to, int amount)
         {
+            if (exchangedThisTurn.Contains(player.Name))
+                return false;
+
             var conversionRates = new Dictionary<(AnimalType, AnimalType), int>
             {
                 [(AnimalType.Królik, AnimalType.Owca)] = 6,
@@ -122,6 +131,7 @@ namespace Model
             HerdStock[from] += required;
             HerdStock[to] -= amount;
 
+            exchangedThisTurn.Add(player.Name);
             return true;
         }
 
