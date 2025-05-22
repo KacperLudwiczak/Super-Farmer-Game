@@ -1,5 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
-using Models;
+using Model;
 
 namespace backend.Controllers
 {
@@ -51,7 +51,7 @@ namespace backend.Controllers
         }
 
         [HttpPost("exchange")]
-        public IActionResult Exchange([FromQuery] Models.AnimalType from, [FromQuery] Models.AnimalType to, [FromQuery] int amount)
+        public IActionResult Exchange([FromQuery] Model.AnimalType from, [FromQuery] Model.AnimalType to, [FromQuery] int amount)
         {
             bool success = game.TryExchange(game.CurrentPlayer, from, to, amount);
             return success ? Ok() : BadRequest("Wymiana nieudana");

@@ -1,4 +1,4 @@
-namespace Models
+namespace Model
 {
     public enum AnimalType
     {
