@@ -96,7 +96,7 @@ function App() {
           <h2>Tura: {state.currentPlayer}</h2>
           <button onClick={rollDice} className="button">Rzut</button>
 
-          <h2 className="dice">Kostki: {dice.join(', ')}</h2>
+          <h2 className="dice">Wynik rzutu: {dice.join(', ')}</h2>
           {winner && <div className="winner">{winner} wygrywa!</div>}
 
           <div className="players">
@@ -118,7 +118,7 @@ function App() {
                 .filter(([a]) => a in animalIcons)
                 .map(([a, count]) => (
                   <li key={a}>
-                    {animalIcons[a as AnimalType]} {a}: {count}
+                    {animalIcons[a as AnimalType]} {a} {count}
                   </li>
                 ))}
             </ul>

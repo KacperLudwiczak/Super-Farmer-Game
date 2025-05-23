@@ -17,7 +17,7 @@ export default function PlayerBoard({ playerName, animals, changes, isActive }: 
           const diff = isActive ? (changes[animal] || 0) : 0;
           return (
             <li key={animal} className={diff > 0 ? 'gain' : diff < 0 ? 'loss' : ''}>
-              {animalIcons[animal as AnimalType]} {animal}: {count}{' '}
+              {animalIcons[animal as AnimalType]} {animal} {count}{' '}
               {diff !== 0 && <span>({diff > 0 ? '+' : ''}{diff})</span>}
             </li>
           );
